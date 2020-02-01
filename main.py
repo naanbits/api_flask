@@ -44,5 +44,12 @@ jwt = JWT(app, authenticate, identity)
 def protected():
     return '%s' % current_identity
 
+@app.route('/')
+def index():
+    return '<b>Hello</b>'
+
+
+
+
 if __name__ == '__main__':
     app.run()
