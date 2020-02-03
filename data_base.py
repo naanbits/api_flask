@@ -13,8 +13,6 @@ user="hlssatbqyqhgcu",
 			port="5432",
 			database="d528b4hs1njq1f"
 '''
-
-
 def getConexionPG():
 	try:
 		connection = psycopg2.connect(
