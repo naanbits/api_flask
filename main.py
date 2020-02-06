@@ -37,7 +37,6 @@ jwt = JWTManager(app)
 def not_found(e): 
   return 'Dirección incorrecta'
 
-
 @app.route('/crear_token', methods=['POST'])
 def crear_token():
     username = request.json.get('username', None)
