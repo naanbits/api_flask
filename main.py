@@ -1,62 +1,23 @@
 from flask import Flask , jsonify , request
-from flask_jwt_extended import (
-    JWTManager, jwt_required, create_access_token,
-    get_jwt_claims , get_jwt_identity
-)
+from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,get_jwt_claims , get_jwt_identity)
 from flask_jwt import JWT, current_identity
 from werkzeug.security import safe_str_cmp
-
-#--------------------
 from flask_cors import CORS
 import json
 from datetime import datetime
 #####my_modules#######
-from data_base import * 
-
-_miConexion =  getConexionPG()
-class User(object):
-    def __init__(self, id, username, password, first_name , last_name, email):
-        self.id = id
-        self.username   = username
-        self.password   = password
-        self.first_name = first_name
-        self.last_name  = last_name
-        self.email      = email
-
-    def __str__(self):
-        data =  "User{id:"+str(self.id)+" ,nombre:"+self.first_name+"}"
-        return data
-
-    def getUser(self):# return data user
-        User = dict()
-        User ={
-            'id'            : str(self.id),
-            'userame'       : str(self.username),
-            'first_name'    : str(self.first_name),
-            'last_name'     : str(self.last_name),
-            'email'         : str(self.email)
-        }        
-        return User
-
-############### GET USERS DB ##############
-def getUsers():
-    queryUsers = 'SELECT * FROM mUSER'
-    dataUsers  = getData(_miConexion , queryUsers)
-    if len(dataUsers)>0:
-        users = list()
-        for x in dataUsers:        
-            newUser = User(x['id'], x['username'] ,
-                        x ['psw'] , x['first_name'],
-                        x['last_name'], x['email'])
-            users.append(newUser)
-    return users
+from Models.Usuario import *
+from Models.Product import *
+from Control.data_base import *
+#----------CREACION DE OBJETO CONEXION PARA BD--------------
+objConexion  = Conexion()
+con          = objConexion.getConexionPG()
 ##--------------------------------------##
-username_table = {u.username : u for u in getUsers()}
-userid_table = {u.id: u for u in getUsers()}
-#--------------------------------------##
+username_table = {u.username : u for u in objConexion.getUsers(User)}
+userid_table = {u.id: u for u in objConexion.getUsers(User)}
+#---------------JWT-----------------------##
 def authenticate(username, password):    
     user = username_table.get(username, None)    
-    
     if user and safe_str_cmp(user.password.encode('utf-8'), password.encode('utf-8')):        
         return user
 
@@ -71,6 +32,12 @@ CORS(app)
 cors = CORS(app, resources={r"/*": {"origins": "*"}})
 
 jwt = JWTManager(app)
+#----------endpoints-----
+@app.errorhandler(404) 
+def not_found(e): 
+  return 'Dirección incorrecta'
+
+
 @app.route('/crear_token', methods=['POST'])
 def crear_token():
     username = request.json.get('username', None)
@@ -81,7 +48,6 @@ def crear_token():
             'User':  user.getUser()
         }
     return ret
-    
 @app.route('/protected', methods= ['GET'])
 @jwt_required
 def protected():
@@ -95,56 +61,72 @@ def protected():
 def index():    
         return '<h3> <b> Conociendo Python</b></h3><p> ABC Community </p>'    
 #---------------------------CRUD PRODUCTS----------------------------
-def getDataProducts():
-    sql = 'SELECT * FROM PRODUCT'
-    products  = getData(_miConexion , sql)
-    data_products = []
-    for x in products:
-        product = dict()                
-        if x['updatedat'] != None:
-           print('yes')
-           x['updatedat'] =  x['updatedat'].strftime('%d/%m/%Y')
-        #----------------------------------------------------------#
-        product = {
-            'ID'                : x['id'],
-            'PRINCIPAL_CODE'    : x['principal_code'],
-            'DESCRIPTION'       : x['description'],
-            'PRICE'             : float(x['price']),
-            'STATE'             : x['state'],
-            'CREATEDAT'         : x['createdat'].strftime('%d/%m/%Y') ,
-            'UPDATEDAT'         : x['updatedat']
-        }    
-        data_products.append(product)
-    return data_products
 #-------------------OBTENER INFO DE PRODUCTOS---------------
 @jwt_required
 @app.route('/products_list/', methods=['GET','POST'])
 def products_list():
     if request.method=='GET':                    
         if protected():        #si token es valido :)
-            return jsonify(getDataProducts())
+            data = getDataProducts('SELECT * FROM PRODUCT')
+            if data:
+                return jsonify(data)
+            else:
+                return jsonify('SIN DATOS')
+
     else:        
         return 'IS NOT GET'
+#---------------OBTENER INFO DE UN PRODUCTO MEDIANTE ID--------
+@jwt_required
+@app.route('/get_product/<string:id>',methods=['GET','POST','PUT','DELETE'])
+def get_product(id):
+    if request.method=='GET':                    
+        if protected():        #si token es valido :)                                
+            sql  = 'SELECT * FROM PRODUCT WHERE ID = '+id 
+            data = getDataProducts(sql)            
+            if data:                    
+                return jsonify(data)
+            else:
+                return jsonify({'msg':'No existe producto con el id '+id})   
+    else:                
+        return 'Metodo debe ser GET'
+
 #------------------ INSERTAR 1 PRODUCTO-------------------
 @app.route('/insert_product', methods=['POST'])
 def insert_product():
     if request.method=='POST' and protected():
         datosRecibidos      = request.get_json()
         PRINCIPAL_CODE      = datosRecibidos['PRINCIPAL_CODE']
-        print(len(PRINCIPAL_CODE))
         if len(PRINCIPAL_CODE) > 10:
             msg = {
-                'Error':'PRINCIPAL_CODE DEBE SER DE MÁXIMO 10 DIGITOS'
+                'msg':'PRINCIPAL_CODE DEBE SER DE MÁXIMO 10 DIGITOS'
             }
             return jsonify(msg) 
         else:
             DESCRIPTION         = datosRecibidos['DESCRIPTION']                
             PRICE               = datosRecibidos['PRICE']
             CREATEDAT           = datetime.today()
-            cur = _miConexion.cursor()
-            query = "INSERT INTO PRODUCT (PRINCIPAL_CODE, DESCRIPTION , PRICE, STATE, CREATEDAT )VALUES(%s,%s,%s,%s,%s);"
-            cur.execute(query,(PRINCIPAL_CODE, DESCRIPTION , PRICE, True, CREATEDAT))
-            _miConexion.commit()               
-            return 'PRODUCTO CREADO CON ÉXITO'
+            msg = insert_table_product(DESCRIPTION , PRICE , CREATEDAT,PRINCIPAL_CODE)        
+            if msg == True:
+                return jsonify({'msg':'PRODUCTO CREADO CON ÉXITO' })
+            return jsonify( {'msg':msg})
+    
+@app.route('/update_product/<id>',methods=['POST'])
+def update_product(id):
+    if request.method=='POST' and protected():
+        datosRecibidos          = request.get_json()
+        PRINCIPAL_CODE          = datosRecibidos['PRINCIPAL_CODE']
+        if len(PRINCIPAL_CODE) > 10:
+            msg = {
+                'msg':'PRINCIPAL_CODE DEBE SER DE MÁXIMO 10 DIGITOS'
+            }
+            return jsonify(msg) 
+        else:
+            DESCRIPTION         = datosRecibidos['DESCRIPTION']                
+            PRICE               = datosRecibidos['PRICE']
+            UPDATEDAT           = datetime.today()         
+            msg = update_tabale_product(id,DESCRIPTION,PRICE,UPDATEDAT,PRINCIPAL_CODE)
+            if msg == True:
+                return jsonify({'msg':'DATOS DEL PRODUCTO ACTUALIZADOS' })
+            return jsonify( {'msg':msg})
 if __name__ == '__main__':
     app.run()
