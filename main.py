@@ -2,7 +2,7 @@ from flask import Flask , jsonify , request
 from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,get_jwt_claims , get_jwt_identity)
 from flask_jwt import JWT, current_identity
 from werkzeug.security import safe_str_cmp
-from flask_cors import CORS
+from flask_cors import CORS , cross_origin
 import json
 from datetime import datetime
 #####my_modules#######
@@ -34,10 +34,12 @@ cors = CORS(app, resources={r"/*": {"origins": "*"}})
 jwt = JWTManager(app)
 #----------endpoints-----
 @app.errorhandler(404) 
+@cross_origin()
 def not_found(e): 
   return 'Dirección incorrecta'
 
 @app.route('/crear_token', methods=['POST'])
+@cross_origin()
 def crear_token():
     username = request.json.get('username', None)
     password = request.json.get('password', None)
@@ -49,6 +51,7 @@ def crear_token():
     return ret
 @app.route('/protected', methods= ['GET'])
 @jwt_required
+@cross_origin()
 def protected():
     current_user = get_jwt_identity()
     if current_user:        
@@ -57,12 +60,14 @@ def protected():
         return False    
 
 @app.route('/')
+@cross_origin()
 def index():    
         return '<h3> <b> Conociendo Python</b></h3><p> ABC Community </p>'    
 #---------------------------CRUD PRODUCTS----------------------------
 #-------------------OBTENER INFO DE PRODUCTOS---------------
 @jwt_required
 @app.route('/products_list/', methods=['GET','POST'])
+@cross_origin()
 def products_list():
     if request.method=='GET':                    
         if protected():        #si token es valido :)
@@ -77,6 +82,7 @@ def products_list():
 #---------------OBTENER INFO DE UN PRODUCTO MEDIANTE ID--------
 @jwt_required
 @app.route('/get_product/<string:id>',methods=['GET','POST','PUT','DELETE'])
+@cross_origin()
 def get_product(id):
     if request.method=='GET':                    
         if protected():        #si token es valido :)                                
@@ -91,6 +97,7 @@ def get_product(id):
 
 #------------------ INSERTAR 1 PRODUCTO-------------------
 @app.route('/insert_product', methods=['POST'])
+@cross_origin()
 def insert_product():
     if request.method=='POST' and protected():
         datosRecibidos      = request.get_json()
@@ -110,6 +117,7 @@ def insert_product():
             return jsonify( {'msg':msg})
     
 @app.route('/update_product/<id>',methods=['POST'])
+@cross_origin()
 def update_product(id):
     if request.method=='POST' and protected():
         datosRecibidos          = request.get_json()
