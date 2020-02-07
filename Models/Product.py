@@ -39,7 +39,7 @@ def insert_table_product(DESCRIPTION , PRICE , CREATEDAT, PRINCIPAL_CODE):
     except Exception as e:
         return str(e)
 
-def update_tabale_product(ID, DESCRIPTION , PRICE ,UPDATEDAT , PRINCIPAL_CODE):
+def update_table_product(ID, DESCRIPTION , PRICE ,UPDATEDAT , PRINCIPAL_CODE):
     _BAND = True
     try:
         data_select  =  query_not(ID)        
@@ -62,6 +62,21 @@ def update_tabale_product(ID, DESCRIPTION , PRICE ,UPDATEDAT , PRINCIPAL_CODE):
                     return True
             return 'NO EXISTE REGISTRO CON EL ID '+str(ID)
     except Exception as e:        
+        return str(e)
+
+def delete_table_product(ID):
+    try:
+        query_validate = 'SELECT * FROM PRODUCT WHERE STATE = TRUE AND ID = '+str(ID)         
+        data_validate  =  getDataProducts(query_validate)
+        print('dd.',data_validate)
+        if data_validate:
+            cur = con.cursor()
+            query_delete = 'UPDATE PRODUCT SET STATE = %s WHERE ID = %s'
+            cur.execute(query_delete,(False, ID) )
+            con.commit()
+            return True
+        return 'NO EXISTE REGISTRO CON EL ID '+str(ID)
+    except Exception as e:
         return str(e)
 
 def query_not(ID):

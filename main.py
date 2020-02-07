@@ -34,12 +34,11 @@ cors = CORS(app, resources={r"/*": {"origins": "*"}})
 jwt = JWTManager(app)
 #----------endpoints-----
 @app.errorhandler(404) 
-@cross_origin()
 def not_found(e): 
   return 'Dirección incorrecta'
 
 @app.route('/crear_token', methods=['POST'])
-@cross_origin()
+
 def crear_token():
     username = request.json.get('username', None)
     password = request.json.get('password', None)
@@ -51,7 +50,6 @@ def crear_token():
     return ret
 @app.route('/protected', methods= ['GET'])
 @jwt_required
-@cross_origin()
 def protected():
     current_user = get_jwt_identity()
     if current_user:        
@@ -60,18 +58,16 @@ def protected():
         return False    
 
 @app.route('/')
-@cross_origin()
 def index():    
         return '<h3> <b> Conociendo Python</b></h3><p> ABC Community </p>'    
 #---------------------------CRUD PRODUCTS----------------------------
 #-------------------OBTENER INFO DE PRODUCTOS---------------
 @jwt_required
 @app.route('/products_list/', methods=['GET','POST'])
-@cross_origin()
 def products_list():
     if request.method=='GET':                    
-        if protected():        #si token es valido :)
-            data = getDataProducts('SELECT * FROM PRODUCT')
+        if protected():
+            data = getDataProducts('SELECT * FROM PRODUCT WHERE STATE = TRUE ')
             if data:
                 return jsonify(data)
             else:
@@ -82,7 +78,7 @@ def products_list():
 #---------------OBTENER INFO DE UN PRODUCTO MEDIANTE ID--------
 @jwt_required
 @app.route('/get_product/<string:id>',methods=['GET','POST','PUT','DELETE'])
-@cross_origin()
+
 def get_product(id):
     if request.method=='GET':                    
         if protected():        #si token es valido :)                                
@@ -97,7 +93,6 @@ def get_product(id):
 
 #------------------ INSERTAR 1 PRODUCTO-------------------
 @app.route('/insert_product', methods=['POST'])
-@cross_origin()
 def insert_product():
     if request.method=='POST' and protected():
         datosRecibidos      = request.get_json()
@@ -117,7 +112,6 @@ def insert_product():
             return jsonify( {'msg':msg})
     
 @app.route('/update_product/<id>',methods=['POST'])
-@cross_origin()
 def update_product(id):
     if request.method=='POST' and protected():
         datosRecibidos          = request.get_json()
@@ -131,9 +125,20 @@ def update_product(id):
             DESCRIPTION         = datosRecibidos['DESCRIPTION']                
             PRICE               = datosRecibidos['PRICE']
             UPDATEDAT           = datetime.today()         
-            msg = update_tabale_product(id,DESCRIPTION,PRICE,UPDATEDAT,PRINCIPAL_CODE)
+            msg = update_table_product(id,DESCRIPTION,PRICE,UPDATEDAT,PRINCIPAL_CODE)
             if msg == True:
                 return jsonify({'msg':'DATOS DEL PRODUCTO ACTUALIZADOS' })
             return jsonify( {'msg':msg})
+
+@app.route('/delete_product/<id>', methods = ['GET'])
+def delete_product(id):
+    print('yes-delete')    
+    if request.method == 'GET':                
+        msg = delete_table_product(id)        
+        if msg == True:
+            return jsonify({'msg':'EL PRODUCTO SE ELIMINÓ CON ÉXITO.'})
+    return jsonify({'msg':msg})
+        
+
 if __name__ == '__main__':
     app.run()
