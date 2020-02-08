@@ -140,5 +140,19 @@ def delete_product(id):
     return jsonify({'msg':msg})
         
 
+@app.route('/consulta_usuario/<id>', methods = ['GET'])
+def consulta_usuario(id):
+    if request.method=='GET':                            
+        sql  = 'SELECT * FROM mUser WHERE ID = '+id 
+        data = objConexion.getData(sql)  
+        if data:                    
+            return jsonify(data)
+        else:
+            return jsonify({'msg':'No existe producto con el id '+id})   
+    else:                
+        return 'Metodo debe ser GET'
+
+
+
 if __name__ == '__main__':
     app.run()
