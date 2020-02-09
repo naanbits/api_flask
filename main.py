@@ -139,20 +139,30 @@ def delete_product(id):
             return jsonify({'msg':'EL PRODUCTO SE ELIMINÓ CON ÉXITO.'})
     return jsonify({'msg':msg})
         
+#------------------------------------------------------------
+def insertarRegistro(id):
+    cur = con.cursor()
+    FECHA = datetime.today()
+    query = "INSERT INTO REGISTRO (FECHA , ID_EMP )VALUES(%s,%s);"
+    cur.execute(query,(FECHA , str(id)))
+    con.commit()      
 
-@app.route('/consulta_usuario/<id>', methods = ['GET'])
-def consulta_usuario(id):
+@app.route('/consulta_empleado/<codigo>', methods = ['GET'])
+def consulta_usuario(codigo):
     if request.method=='GET':                            
-        sql  = 'SELECT * FROM mUser WHERE ID = '+id 
+        codigo = str(codigo)
+        print(type(codigo))
+        sql  = 'SELECT ID, NOMBRE FROM EMPLEADO WHERE CODIGO = '+str("'"+codigo+"'")
         data = objConexion.getData(sql)  
-        if data:                    
+        if data:
+            id = data[0]['id'] #id empleado
+            insertarRegistro(id)                             
+            empleado = {'empleado': data}
             return jsonify(data)
-        else:
-            return jsonify({'msg':'No existe producto con el id '+id})   
+        else:        
+            return jsonify({'msg':'0'})
     else:                
         return 'Metodo debe ser GET'
-
-
 
 if __name__ == '__main__':
     app.run()
