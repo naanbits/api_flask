@@ -156,9 +156,9 @@ def consulta_usuario(codigo):
         data = objConexion.getData(sql)  
         if data:
             id = data[0]['id'] #id empleado
-            insertarRegistro(id)                             
-            empleado = {'empleado': data}
-            return jsonify(data)
+            #insertarRegistro(id)                                         
+            empleado = str(data[0]['id'])+';'+ data[0]['nombre'] #orden id;empleado -> para leer desde esp y hacer split
+            return jsonify(empleado)
         else:        
             return jsonify({'msg':'0'})
     else:                
