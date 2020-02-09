@@ -160,7 +160,7 @@ def consulta_usuario(codigo):
             empleado = str(data[0]['id'])+';'+ data[0]['nombre'] #orden id;empleado -> para leer desde esp y hacer split
             return jsonify(empleado)
         else:        
-            return jsonify({'msg':'0'})
+            return jsonify("0;0")
     else:                
         return 'Metodo debe ser GET'
 
