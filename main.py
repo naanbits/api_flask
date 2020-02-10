@@ -1,4 +1,4 @@
-from flask import Flask , jsonify , request
+from flask import Flask , jsonify , request , render_template
 from flask_jwt_extended import (JWTManager, jwt_required, create_access_token,get_jwt_claims , get_jwt_identity)
 from flask_jwt import JWT, current_identity
 from werkzeug.security import safe_str_cmp
@@ -59,7 +59,8 @@ def protected():
 
 @app.route('/')
 def index():    
-        return '<h3> <b> Conociendo Python</b></h3><p> ABC Community </p>'    
+        return render_template('index.html')
+        #return '<h3> <b> Conociendo Python</b></h3><p> ABC Community </p>'    
 #---------------------------CRUD PRODUCTS----------------------------
 #-------------------OBTENER INFO DE PRODUCTOS---------------
 @jwt_required
@@ -157,7 +158,7 @@ def consulta_usuario(codigo):
         if data:
             id = data[0]['id'] #id empleado
             #insertarRegistro(id)                                         
-            empleado = str(data[0]['id'])+';'+ data[0]['nombre'] #orden id;empleado -> para leer desde esp y hacer split
+            empleado = str(data[0]['id'])+';'+ data[0]['nombre'] #orden id;empleado -> para leer desde esp y hacer split            
             return jsonify(empleado)
         else:        
             return jsonify("0;0")
