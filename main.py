@@ -166,4 +166,4 @@ def consulta_usuario(codigo):
         return 'Metodo debe ser GET'
 
 if __name__ == '__main__':
-    app.run()
+    app.run(use_reloader=True)
