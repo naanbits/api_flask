@@ -4,7 +4,7 @@ from Control.config import *
 
 class Conexion(object):
 	def __init__(self):
-		self.dataBD = getDataJson()[0]  
+		self.dataBD = getDataJson()[1]  
 		print(self.dataBD)
 	
 	def getConexionPG(self):
