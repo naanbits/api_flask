@@ -28,8 +28,11 @@ def identity(payload):
 app = Flask(__name__)
 app.debug = False
 app.config['SECRET_KEY'] = 'super-secret'
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = False
+#CORS(app)
+#cors = CORS(app, resources={r"/*": {"origins": "*"}})
+
 CORS(app)
-cors = CORS(app, resources={r"/*": {"origins": "*"}})
 
 jwt = JWTManager(app)
 #----------endpoints-----
@@ -38,7 +41,6 @@ def not_found(e):
   return 'Dirección incorrecta'
 
 @app.route('/crear_token', methods=['POST'])
-
 def crear_token():
     username = request.json.get('username', None)
     password = request.json.get('password', None)
