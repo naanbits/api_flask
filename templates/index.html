@@ -6,12 +6,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>ABC Technology</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css">
 </head>
 
 
-<body>
-    <div>
-        <img src="{{url_for('static', filename='images/abc.jpeg')}}" alt="" width="100%">
+<body style="background-color: black;height: 100vh;font-family: Arial, Helvetica, sans-serif;">
+    <div style="display: flex;justify-content: center;align-items: center;height: 100vh;flex-direction: column;">
+        <img src="{{url_for('static', filename='images/abc.jpeg')}}" alt="fefe" style="width: 500px;height: 350px;">
+        <div>
+            <a style="text-decoration: none;color: white;" href="https://www.facebook.com/ABC-Technology-110977590464246">
+                <i style="color: white;" class="fab fa-facebook"></i> ABC Technology
+            </a> 
+            <a style="margin-left: 15px; text-decoration: none;color: white;" href="https://www.youtube.com/channel/UChD6yzc4sXamJMKI4-gzbuA?view_as=subscriber">
+                <i style="color: white;" class="fab fa-youtube"></i> ABC Educate
+            </a>
+        </div>
     </div>
 </body>
 
