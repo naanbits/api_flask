@@ -3,7 +3,7 @@ from Control.data_base import *
 objConexion = Conexion()
 con = objConexion.getConexionPG()
 
-def getDataProducts(sql):
+def get_data_products(sql):
     products = objConexion.getData(sql)
     data_products = []    
     if products:    
@@ -11,7 +11,7 @@ def getDataProducts(sql):
             product = dict()
             if x['updatedat'] != None:
                 x['updatedat'] = x['updatedat'].strftime('%d/%m/%Y')
-                #----------------------------------------------------------#
+            #----------------------------------------------------------#
             product = {
                     'ID': x['id'],
                     'PRINCIPAL_CODE': x['principal_code'],
@@ -27,7 +27,7 @@ def getDataProducts(sql):
 def insert_table_product(DESCRIPTION , PRICE , CREATEDAT, PRINCIPAL_CODE):
     try:
         query_select    = 'SELECT * FROM PRODUCT WHERE STATE = TRUE'
-        data_validate = getDataProducts(query_select)
+        data_validate = get_data_products(query_select)
         if validate_principal_code(data_validate , PRINCIPAL_CODE):        
             return 'YA EXISTE UN PRODUCTO CON ESE PRINCIPAL_CODE.'
         else:
@@ -44,12 +44,12 @@ def update_table_product(ID, DESCRIPTION , PRICE ,UPDATEDAT , PRINCIPAL_CODE):
     try:
         data_select  =  query_not(ID)        
         query_select    = 'SELECT * FROM PRODUCT WHERE STATE = TRUE'
-        data_exists = getDataProducts(query_select)
+        data_exists = get_data_products(query_select)
         if not data_exists:        
             return 'NO EXISTEN REGISTROS'
         else:        
             query_validate = 'SELECT * FROM PRODUCT WHERE STATE = TRUE AND ID = '+str(ID) 
-            data_validate  =getDataProducts(query_validate)
+            data_validate  =get_data_products(query_validate)
             print('da',data_validate)
             if data_validate:
                 if validate_principal_code(data_select , PRINCIPAL_CODE):
@@ -67,7 +67,7 @@ def update_table_product(ID, DESCRIPTION , PRICE ,UPDATEDAT , PRINCIPAL_CODE):
 def delete_table_product(ID):
     try:
         query_validate = 'SELECT * FROM PRODUCT WHERE STATE = TRUE AND ID = '+str(ID)         
-        data_validate  =  getDataProducts(query_validate)
+        data_validate  =  get_data_products(query_validate)
         print('dd.',data_validate)
         if data_validate:
             cur = con.cursor()
@@ -82,12 +82,11 @@ def delete_table_product(ID):
 def query_not(ID):
     query_select = 'SELECT * FROM PRODUCT WHERE  STATE = TRUE AND  ID <> '+str(ID)        
     if query_select:
-        return getDataProducts(query_select)
+        return get_data_products(query_select)
     return False
 
 def validate_principal_code(data_list , value):
-    print('Ingreso validate -- ', data_list , value)
-    if data_list:
+    if data_list:        
         for x in data_list:            
             if value == x['PRINCIPAL_CODE']:            
                 return True        

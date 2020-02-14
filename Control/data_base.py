@@ -4,8 +4,7 @@ from Control.config import *
 
 class Conexion(object):
 	def __init__(self):
-		self.dataBD = getDataJson()[1]  
-		print(self.dataBD)
+		self.dataBD = getDataJson()[1]  		
 	
 	def getConexionPG(self):
 		try:
@@ -14,15 +13,13 @@ class Conexion(object):
 				password  =   self.dataBD['psw'],
 				host      =   self.dataBD['host'],
 				port	  =   self.dataBD['port'],
-				database  =   self.dataBD['db'])
-			print('yes')
+				database  =   self.dataBD['db'])			
 		except:
 			print('Error Conexion')
 		return connection	
 
 	def getData(self, sql):
-		if self.getConexionPG():						
-			print('sel')
+		if self.getConexionPG():									
 			try:
 				cur = self.getConexionPG().cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 				cur.execute(sql)
