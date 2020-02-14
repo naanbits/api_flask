@@ -9,6 +9,15 @@ from datetime import datetime
 from Models.Usuario import *
 from Models.Product import *
 from Control.data_base import *
+import marshal
+
+app = Flask(__name__)
+app.debug = False
+app.config['SECRET_KEY'] = 'super-secret'
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = False
+app.config['CORS_HEADERS'] = 'Content-Type'
+cors = CORS(app,resources={r"/api/*":{"origins":"*"}})
+
 #----------CREACION DE OBJETO CONEXION PARA BD--------------
 objConexion  = Conexion()
 con          = objConexion.getConexionPG()
@@ -25,14 +34,12 @@ def identity(payload):
     user_id = payload['identity']
     return userid_table.get(user_id, None)
 #-------------FLASK------------------------#
-app = Flask(__name__)
-app.debug = False
-app.config['SECRET_KEY'] = 'super-secret'
-app.config['JWT_ACCESS_TOKEN_EXPIRES'] = False
+
 #CORS(app)
 #cors = CORS(app, resources={r"/*": {"origins": "*"}})
 
-CORS(app)
+
+
 
 jwt = JWTManager(app)
 #----------endpoints-----
@@ -40,16 +47,19 @@ jwt = JWTManager(app)
 def not_found(e): 
   return 'Dirección incorrecta'
 
-@app.route('/crear_token', methods=['POST'])
+
+@app.route('/api/crear_token', methods=['POST'])
 def crear_token():
-    username = request.json.get('username', None)
+    username = request.json.get('username')
     password = request.json.get('password', None)
-    user = username_table.get(username, None)  
-    print('st__', user.__str__())
-    ret = {'access_token': create_access_token(username , fresh=False),
+    user = username_table.get(username, None)
+    valor = create_access_token(username , fresh=False)
+    userRes = user.getUser()
+    response  = jsonify({'access_token': create_access_token(username , fresh=False),
             'User':  user.getUser()
-        }
-    return ret
+        })
+    return response
+    
 @app.route('/protected', methods= ['GET'])
 @jwt_required
 def protected():
@@ -66,7 +76,7 @@ def index():
 #---------------------------CRUD PRODUCTS----------------------------
 #-------------------OBTENER INFO DE PRODUCTOS---------------
 @jwt_required
-@app.route('/products_list/', methods=['GET','POST'])
+@app.route('/api/products_list', methods=['GET'])
 def products_list():
     if request.method=='GET':                    
         if protected():
@@ -80,7 +90,7 @@ def products_list():
         return 'IS NOT GET'
 #---------------OBTENER INFO DE UN PRODUCTO MEDIANTE ID--------
 @jwt_required
-@app.route('/get_product/<string:id>',methods=['GET','POST','PUT','DELETE'])
+@app.route('/api/get_product/<string:id>',methods=['GET','POST','PUT','DELETE'])
 
 def get_product(id):
     if request.method=='GET':                    
@@ -95,7 +105,7 @@ def get_product(id):
         return 'Metodo debe ser GET'
 
 #------------------ INSERTAR 1 PRODUCTO-------------------
-@app.route('/insert_product', methods=['POST'])
+@app.route('/api/insert_product', methods=['POST'])
 def insert_product():
     if request.method=='POST' and protected():
         datosRecibidos      = request.get_json()
@@ -114,7 +124,7 @@ def insert_product():
                 return jsonify({'msg':'PRODUCTO CREADO CON ÉXITO' })
             return jsonify( {'msg':msg})
     
-@app.route('/update_product/<id>',methods=['POST'])
+@app.route('/api/update_product/<id>',methods=['POST'])
 def update_product(id):
     if request.method=='POST' and protected():
         datosRecibidos          = request.get_json()
@@ -133,7 +143,7 @@ def update_product(id):
                 return jsonify({'msg':'DATOS DEL PRODUCTO ACTUALIZADOS' })
             return jsonify( {'msg':msg})
 
-@app.route('/delete_product/<id>', methods = ['GET'])
+@app.route('/api/delete_product/<id>', methods = ['GET'])
 def delete_product(id):
     print('yes-delete')    
     if request.method == 'GET':                
@@ -150,7 +160,7 @@ def insertarRegistro(id):
     cur.execute(query,(FECHA , str(id)))
     con.commit()      
 
-@app.route('/consulta_empleado/<codigo>', methods = ['GET'])
+@app.route('/api/consulta_empleado/<codigo>', methods = ['GET'])
 def consulta_usuario(codigo):
     if request.method=='GET':                            
         codigo = str(codigo)
