@@ -10,6 +10,6 @@ Jinja2==2.11.1
 MarkupSafe==1.1.1
 psycopg2-binary==2.8.4
 pycodestyle==2.5.0
-PyJWT==1.7.1
+PyJWT==2.4.0
 six==1.14.0
 Werkzeug==0.16.1
